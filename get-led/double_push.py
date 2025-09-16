@@ -32,4 +32,4 @@ while True:
     for i in range(8):
         if dec2bin(num)[i]: GPIO.output(leds[i], 1)
     GPIO.output(leds, 0)
-    time.sleep(1)
+    #time.sleep(1)
