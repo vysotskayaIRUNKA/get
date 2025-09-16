@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BCM)
-led = 16
-GPIO.setup(led, GPIO.OUT)
+leds = [22, 23, 27, 17]
+GPIO.setup(leds, GPIO.OUT)
 while True:
-    GPIO.output(led, 0)
+    GPIO.output(leds, 0)
