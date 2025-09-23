@@ -15,20 +15,21 @@ GPIO.setup(down_arr, GPIO.IN)
 num = 0
 sleep_time = 0.2
 while True:
-    start_time = time.time()
-    if (time.time()-start_time <= 1) and GPIO.input(up_arr) and not(GPIO.input(down_arr)):
+    #start_time = time.time()
+    if  GPIO.input(up_arr) and not(GPIO.input(down_arr)): #(time.time()-start_time <= 1) and
         num += 1
         if num>255: num=0
         print(num, dec2bin(num))
         time.sleep(sleep_time)
-    elif (time.time()-start_time <= 1) and GPIO.input(down_arr) and not(GPIO.input(up_arr)):
+    elif  GPIO.input(down_arr) and not(GPIO.input(up_arr)): #(time.time()-start_time <= 1) and
         num-=1
         if num<0: num=255
         print(num, dec2bin(num))
         time.sleep(sleep_time)
-    elif (time.time()-start_time <= 1) and GPIO.input(down_arr) and GPIO.input(up_arr):
+    elif GPIO.input(down_arr) and GPIO.input(up_arr): #(time.time()-start_time <= 1) and 
         num=255
         print(num, dec2bin(num))
+        time.sleep(sleep_time)
     for i in range(8):
         if dec2bin(num)[i]: GPIO.output(leds[i], 1)
     GPIO.output(leds, 0)
