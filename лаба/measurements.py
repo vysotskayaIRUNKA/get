@@ -10,9 +10,13 @@ def getAdc():
     return ((adcResponse[0] & 0x1F) << 0 | adcResponse[1]) >> 1
 
 try:
+    #f = open('measure.txt', 'w')
     samples = []
     for i in range(20000):
         samples.append(getAdc())
+    #for i in samples:
+    #   f.write(i + '\n')
+    #f.close()
     plt.plot(samples)
     plt.show()
 finally:
