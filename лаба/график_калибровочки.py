@@ -25,6 +25,7 @@ av160 = sum(v160)/(len(r160)-1)
 av120 = sum(v120)/(len(r120)-1)
 av80 = sum(v80)/(len(r80)-1)
 av40 = sum(v40)/(len(r40)-1)
+
 plt.plot([40, 80, 120, 160, 200], [av40, av80, av120, av160, av200])
 plt.xlabel('Давление, мм.рт.ст.')
 plt.ylabel('Напряжение, В')
