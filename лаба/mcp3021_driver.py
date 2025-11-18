@@ -22,23 +22,24 @@ class MCP3021:
         return number 
     
     def get_voltage(self):
-        value = MCP3021.get_number(self)
+        value = self.get_number()
         return value/1024 * self.dynamic_range
     
 
 if __name__ == "__main__":
     mcp = MCP3021(5)
     start = time.time()
-    try:
-        voltages = np.array([])
-        times = np.array([])
-        while time.time()-start < 50:
+    try: 
+        voltages = []
+        times = []
+        while time.time()-start < 60:
             voltage = mcp.get_voltage()
             t = time.time() - start
             voltages.append(voltage)
             times.append(t)
-            time.sleep(1)
-        data = np.column_stack(voltages, times)
-        np.savetxt('200mm.csv', data, delimiter=',', fmt='%.4f', header='Напряжение[B], Время[c]', comments='', encoding='utf-8')
+        v = np.array(voltages)
+        t = np.array(times)
+        data = np.column_stack((t, v))
+        np.savetxt('Иришка.csv', data, delimiter=',', fmt='%.4f', header='Время[c], Напряжение[B]', comments='', encoding='utf-8')
     finally:
         mcp.deinit()
