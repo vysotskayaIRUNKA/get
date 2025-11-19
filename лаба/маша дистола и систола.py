@@ -36,7 +36,7 @@ distola = min([pressures_distola[i] for i in near_time_distola]) #71
 
 plt.plot(mary.times, pressures)
 plt.plot([i for i in range(61)], [128 for i in range(61)], label='Систолическое давление, 128 мм.рт.ст')
-plt.plot([i for i in range(61)], [71 for i in range(61)], label='Дистолическое давление, 71 мм.рт.ст')
+plt.plot([i for i in range(61)], [71 for i in range(61)], label='Диастолическое давление, 71 мм.рт.ст')
 plt.title('График давления Маши от времени')
 plt.grid()
 plt.xlabel('Время, с')
