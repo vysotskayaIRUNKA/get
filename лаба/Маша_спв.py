@@ -70,6 +70,7 @@ time_distola = [times_peak2[i] for i in range(len(peak2)) if peak2[i]==distola]
 
 RI = 1.63/(max(time_distola)-max(time_sistola)) #RI = 6.680327868852465
 
-plt.grid()
-plt.scatter(times_for_1_puls, pressures_for_1_puls)
-plt.show()
+if __name__ == "__main__":
+    plt.grid()
+    plt.scatter(times_for_1_puls, pressures_for_1_puls)
+    plt.show()
