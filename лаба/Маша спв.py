@@ -68,8 +68,7 @@ distola = max(peak2)
 time_distola = [times_peak2[i] for i in range(len(peak2)) if peak2[i]==distola]
 #время низкого пика -- 23.4302
 
-RI = 1.63/(max(time_distola)-max(time_sistola))
-print(RI)
+RI = 1.63/(max(time_distola)-max(time_sistola)) #RI = 6.680327868852465
 
 plt.grid()
 plt.scatter(times_for_1_puls, pressures_for_1_puls)
