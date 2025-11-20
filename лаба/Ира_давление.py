@@ -12,10 +12,12 @@ b = 0.16239994826454973
 
 pressures = [(i-b)/k for i in voltages]
 
-plt.plot(times, pressures)
 
-plt.title('График давления Иры от времени')
-plt.grid()
-plt.xlabel('Время, с')
-plt.ylabel('Давление, мм.рт.ст.')
-plt.show()
+if __name__ == "__main__":
+    plt.plot(times, pressures)
+
+    plt.title('График давления Иры от времени')
+    plt.grid()
+    plt.xlabel('Время, с')
+    plt.ylabel('Давление, мм.рт.ст.')
+    plt.show()
