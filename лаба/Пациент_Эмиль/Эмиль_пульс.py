@@ -1,14 +1,14 @@
-import Халид_давление as kh
-import Халид_спв as spv
+import Эмиль_давление as mary
+import Эмиль_спв as spv
 import matplotlib.pyplot as plt
 
 
 puls_times = []
 puls_pressures = []
-pressures, b, a = spv.butterworth_filter(kh.pressures, spv.fs, spv.cutoff_freq)
-for i in range(len(kh.times)):
-    if kh.times[i]>=21 and kh.times[i]<40: #time 20-40 для наблюдения перехода между систолическим и диастолическим
-        puls_times.append(kh.times[i])
+pressures, b, a = spv.butterworth_filter(mary.pressures, spv.fs, spv.cutoff_freq)
+for i in range(len(mary.times)):
+    if mary.times[i]>=21 and mary.times[i]<24.5:
+        puls_times.append(mary.times[i])
         puls_pressures.append(pressures[i])
 
 detrended_puls = spv.signal.detrend(puls_pressures)
@@ -23,11 +23,10 @@ puls_near2peak = [puls_pressures[i] for i in times_near2peak]
 puls2peak = max(puls_near2peak)
 time2peak = [puls_times[i] for i in times_near2peak if puls_pressures[i]==puls2peak] #23.8768
 
-#на 1 интервал приходится 0.7105с
-#пульс 85,263 удара в минуту
+#пульс примерно 60,3954 удосов в минуту
 
 
-plt.title('Пульс Халида')
+plt.title('Пульс Эмиля')
 plt.plot(puls_times, detrended_puls)
 plt.grid()
 plt.show()
