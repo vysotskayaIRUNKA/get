@@ -1,0 +1,4 @@
+RI=6,235
+PerRP = 0,66%
+sistol = 112
+distol = 55
