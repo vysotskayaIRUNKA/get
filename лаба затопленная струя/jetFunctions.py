@@ -2,7 +2,6 @@ import spidev
 import time
 import RPi.GPIO as GPIO
 
-
 ########################################
 #   Open, use and close SPI ADC
 ########################################

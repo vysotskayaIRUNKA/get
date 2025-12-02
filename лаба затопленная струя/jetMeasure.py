@@ -1,21 +1,18 @@
 import jetFunctions as j
-import spidev
-import matplotlib.pyplot as plt 
-
-spi = spidev.SpiDev()
-spi.open(0, 0)
-spi.max_speed_hz = 1600000
-
-def getAdc():
-    adcResponse = spi.xfer2([0, 0])
-    return ((adcResponse[0] & 0x1F) << 8 | adcResponse[1]) >> 1
+import matplotlib.pyplot as plt
+import time
+import numpy as np 
 
 try: 
+    j.initSpiAdc()
     samples = []
-    for i in range(20000):
-        samples.append(getAdc())
-        plt.plot(samples)
-        plt.show()
+    for i in range(50):
+        samples.append(j.getAdc())
+        time.sleep(0.1)
+    data = np.array(samples)
+    np.savetxt('калибровка xПа', data, fmt='%d', header='Калибровка давления 0Па', comments='', encoding='utf-8')
+    plt.plot(samples)
+    plt.show()
     
 finally:
-    spi.close()
+    j.deinitSpiAdc()
