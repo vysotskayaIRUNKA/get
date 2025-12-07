@@ -3,10 +3,10 @@ import numpy as np
 import math
 
 # Коэффициент преобразования (отсчеты АЦП в паскали)
-COEFFICIENT = 37.375  # отсчет/Паскаль
+COEFFICIENT = 0.50012  # отсчет/Паскаль
 # Плотность воздуха (кг/м^3)
 RHO = 1.3
-
+ADC_atm = 212386.86
 # Список файлов с измерениями
 # ФАЙЛ 1: mm0.txt - базовая настройка
 # ФАЙЛ 2: mm1.txt - первое измерение
@@ -19,15 +19,15 @@ RHO = 1.3
 # ФАЙЛ 9: mm8.txt - восьмое измерение
 
 FILE_NAMES = [
-    "D:/forpython/My_GitHub/get/лаба затопленная струя/My_work_Laba/mm0.txt",  # Файл 1
-    "D:/forpython/My_GitHub/get/лаба затопленная струя/My_work_Laba/mm1.txt",  # Файл 2
-    "D:/forpython/My_GitHub/get/лаба затопленная струя/My_work_Laba/mm2.txt",  # Файл 3
-    "D:/forpython/My_GitHub/get/лаба затопленная струя/My_work_Laba/mm3.txt",  # Файл 4
-    "D:/forpython/My_GitHub/get/лаба затопленная струя/My_work_Laba/mm4.txt",  # Файл 5
-    "D:/forpython/My_GitHub/get/лаба затопленная струя/My_work_Laba/mm5.txt",  # Файл 6
-    "D:/forpython/My_GitHub/get/лаба затопленная струя/My_work_Laba/mm6.txt",  # Файл 7
-    "D:/forpython/My_GitHub/get/лаба затопленная струя/My_work_Laba/mm7.txt",  # Файл 8
-    "D:/forpython/My_GitHub/get/лаба затопленная струя/My_work_Laba/mm8.txt",  # Файл 9
+    "d:\Filiki\My_work_Laba\mm0.txt",  # Файл 1
+    "d:\Filiki\My_work_Laba\mm10.txt",  # Файл 2
+    "d:\Filiki\My_work_Laba\mm20.txt",  # Файл 3
+    "d:\Filiki\My_work_Laba\mm30.txt",  # Файл 4
+    "d:\Filiki\My_work_Laba\mm40.txt",  # Файл 5
+    "d:\Filiki\My_work_Laba\mm50.txt",  # Файл 6
+    "d:\Filiki\My_work_Laba\mm60.txt",  # Файл 7
+    "d:\Filiki\My_work_Laba\mm70.txt",  # Файл 8
+    "d:\Filiki\My_work_Laba\mm80.txt",  # Файл 9
 ]
 
 # Цвета для разных файлов
@@ -87,14 +87,33 @@ def convert_to_pressure(adc_measurements):
     """
     Преобразует отсчеты АЦП в давление в паскалях
     """
-    pressure_measurements = [adc_value / COEFFICIENT for adc_value in adc_measurements]
+    pressure_measurements = []
+    
+    for adc_value in adc_measurements:
+        if adc_value - ADC_atm > 0:
+            pressure_measurements.append((adc_value - ADC_atm) * COEFFICIENT)
+        else:
+            pressure_measurements.append(0)
+
     return pressure_measurements
 
 def convert_to_velocity(pressure_measurements):
     """
     Преобразует давление в скорость струи воздуха по формуле: V = sqrt(2P/ρ)
     """
-    velocity_measurements = [math.sqrt(2 * P / RHO) for P in pressure_measurements]
+    
+    velocity_measurements = []
+    
+    for P in pressure_measurements:
+        # Вычисляем разность давления и проверяем, чтобы подкоренное выражение было неотрицательным
+        pressure_diff = P - 117
+        
+        if pressure_diff > 0:
+            velocity = math.sqrt(0.17 * pressure_diff / RHO)
+            velocity_measurements.append(velocity)
+        else:
+            velocity_measurements.append(0)
+
     return velocity_measurements
 
 def create_distances_array(measurement_count):
@@ -111,28 +130,47 @@ def create_distances_array(measurement_count):
     
     return distances
 
+def calculate_area_under_curve(x_values, y_values):
+    """
+    Вычисляет площадь под кривой методом трапеций
+    """
+    area = 0.0
+    for i in range(1, len(x_values)):
+        width = abs(x_values[i] - x_values[i-1])
+        avg_height = (y_values[i] + y_values[i-1]) / 2.0
+        area += width * avg_height
+    
+    return area
+
 def plot_all_pressure(all_pressure_arrays, distances_arrays, file_names):
     """
     Строит график давления для всех файлов на одном графике
     """
     fig, ax = plt.subplots(figsize=(14, 8))
     
-    # Рисуем графики для каждого файла
+    # Вычисляем площади под кривыми давления
+    pressure_areas = []
     for i, (pressure_array, distances) in enumerate(zip(all_pressure_arrays, distances_arrays)):
+        area = calculate_area_under_curve(distances, pressure_array)
+        pressure_areas.append(area)
+    
+    # Рисуем графики для каждого файла
+    for i, (pressure_array, distances, area) in enumerate(zip(all_pressure_arrays, distances_arrays, pressure_areas)):
         if i < len(COLORS):
             color = COLORS[i]
         else:
             color = 'black'  # если файлов больше чем цветов
         
-        # Создаем метку из имени файла
-        label = f"Файл {i+1}: {file_names[i].split('/')[-1]}"
+        # Создаем метку с площадью
+        short_name = file_names[i].split('\\')[-1]  # Изменено с '/' на '\\' для Windows путей
+        label = f"Файл {i+1}: {short_name} (S={area:.2f})"
         
         ax.plot(distances, pressure_array, 
                 color=color, linewidth=2, marker='o', markersize=3,
                 label=label)
     
     # Настройки графика
-    ax.set_xlabel('Расстояние, усл. ед.', fontsize=12)
+    ax.set_xlabel('Координата трубки Пито, мм', fontsize=12)
     ax.set_ylabel('Давление, Па', fontsize=12)
     ax.set_title('Зависимость давления от расстояния (все измерения)', fontsize=14)
     ax.grid(True, alpha=0.3)
@@ -148,9 +186,16 @@ def plot_all_pressure(all_pressure_arrays, distances_arrays, file_names):
     plt.tight_layout()
     plt.savefig("all_pressure_graphs.png", dpi=150)
     print("\nГрафик давлений для всех файлов сохранен как 'all_pressure_graphs.png'")
+    
+    # Выводим информацию о площадях
+    print("\nПлощади под графиками давления:")
+    for i, area in enumerate(pressure_areas):
+        short_name = file_names[i].split('\\')[-1]
+        print(f"  Файл {i+1} ({short_name}): {area:.2f} Па·ед.")
+    
     plt.show()
     
-    return fig, ax
+    return fig, ax, pressure_areas
 
 def plot_all_velocity(all_velocity_arrays, distances_arrays, file_names):
     """
@@ -158,21 +203,29 @@ def plot_all_velocity(all_velocity_arrays, distances_arrays, file_names):
     """
     fig, ax = plt.subplots(figsize=(14, 8))
     
-    # Рисуем графики для каждого файла
+    # Вычисляем площади под кривыми скорости
+    velocity_areas = []
     for i, (velocity_array, distances) in enumerate(zip(all_velocity_arrays, distances_arrays)):
+        area = calculate_area_under_curve(distances, velocity_array)
+        velocity_areas.append(area)
+    
+    # Рисуем графики для каждого файла
+    for i, (velocity_array, distances, area) in enumerate(zip(all_velocity_arrays, distances_arrays, velocity_areas)):
         if i < len(COLORS):
             color = COLORS[i]
         else:
             color = 'black'
         
-        label = f"Файл {i+1}: {file_names[i].split('/')[-1]}"
+        # Создаем метку с площадью
+        short_name = file_names[i].split('\\')[-1]  # Изменено с '/' на '\\' для Windows путей
+        label = f"Файл {i+1}: {short_name} ({area:.2f})"
         
         ax.plot(distances, velocity_array, 
                 color=color, linewidth=2, marker='s', markersize=3,
                 label=label)
     
     # Настройки графика
-    ax.set_xlabel('Расстояние, усл. ед.', fontsize=12)
+    ax.set_xlabel('Координата трубки Пито, мм', fontsize=12)
     ax.set_ylabel('Скорость, м/с', fontsize=12)
     ax.set_title('Зависимость скорости от расстояния (все измерения)', fontsize=14)
     ax.grid(True, alpha=0.3)
@@ -180,17 +233,24 @@ def plot_all_velocity(all_velocity_arrays, distances_arrays, file_names):
     # Легенда
     ax.legend(loc='best', fontsize=10)
     
-    # Информация о формуле
-    ax.text(0.02, 0.98, f'Формула: V = √(2P/ρ), ρ = {RHO} кг/м³', 
+    # Информация о формуле и площади
+    ax.text(0.02, 0.98, f'Формула: V = √(2(P-P0)/ρ), ρ = {RHO} кг/м³', 
             transform=ax.transAxes, fontsize=10, verticalalignment='top',
             bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
     
     plt.tight_layout()
     plt.savefig("all_velocity_graphs.png", dpi=150)
     print("График скоростей для всех файлов сохранен как 'all_velocity_graphs.png'")
+    
+    # Выводим информацию о площадях
+    print("\nПлощади под графиками скорости:")
+    for i, area in enumerate(velocity_areas):
+        short_name = file_names[i].split('\\')[-1]
+        print(f"  Файл {i+1} ({short_name}): {area:.2f} (м/с)·ед.")
+    
     plt.show()
     
-    return fig, ax
+    return fig, ax, velocity_areas
 
 def plot_pressure_for_each_file(all_pressure_arrays, distances_arrays, file_names):
     """
@@ -206,8 +266,11 @@ def plot_pressure_for_each_file(all_pressure_arrays, distances_arrays, file_name
     for i, (pressure_array, distances) in enumerate(zip(all_pressure_arrays, distances_arrays)):
         ax = axes[i]
         
+        # Вычисляем площадь под кривой
+        area = calculate_area_under_curve(distances, pressure_array)
+        
         # Получаем имя файла без пути
-        short_name = file_names[i].split('/')[-1]
+        short_name = file_names[i].split('\\')[-1]  # Изменено с '/' на '\\' для Windows путей
         
         ax.plot(distances, pressure_array, 'b-', linewidth=2, marker='o', markersize=3)
         ax.set_xlabel('Расстояние, усл. ед.', fontsize=10)
@@ -215,8 +278,8 @@ def plot_pressure_for_each_file(all_pressure_arrays, distances_arrays, file_name
         ax.set_title(f'Файл {i+1}: {short_name}', fontsize=11)
         ax.grid(True, alpha=0.3)
         
-        # Статистика на графике
-        stats_text = f"Макс: {max(pressure_array):.1f} Па\nСр: {np.mean(pressure_array):.1f} Па"
+        # Статистика на графике с площадью
+        stats_text = f"Макс: {max(pressure_array):.1f} Па\nСр: {np.mean(pressure_array):.1f} Па\nПлощадь: {area:.2f} Па·ед."
         ax.text(0.98, 0.98, stats_text, transform=ax.transAxes, fontsize=9,
                 verticalalignment='top', horizontalalignment='right',
                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
@@ -244,7 +307,10 @@ def plot_velocity_for_each_file(all_velocity_arrays, distances_arrays, file_name
     for i, (velocity_array, distances) in enumerate(zip(all_velocity_arrays, distances_arrays)):
         ax = axes[i]
         
-        short_name = file_names[i].split('/')[-1]
+        # Вычисляем площадь под кривой
+        area = calculate_area_under_curve(distances, velocity_array)
+        
+        short_name = file_names[i].split('\\')[-1]  # Изменено с '/' на '\\' для Windows путей
         
         ax.plot(distances, velocity_array, 'r-', linewidth=2, marker='s', markersize=3)
         ax.set_xlabel('Расстояние, усл. ед.', fontsize=10)
@@ -252,7 +318,7 @@ def plot_velocity_for_each_file(all_velocity_arrays, distances_arrays, file_name
         ax.set_title(f'Файл {i+1}: {short_name}', fontsize=11)
         ax.grid(True, alpha=0.3)
         
-        stats_text = f"Макс: {max(velocity_array):.1f} м/с\nСр: {np.mean(velocity_array):.1f} м/с"
+        stats_text = f"Макс: {max(velocity_array):.1f} м/с\nСр: {np.mean(velocity_array):.1f} м/с\nПлощадь: {area:.2f} (м/с)·ед."
         ax.text(0.98, 0.98, stats_text, transform=ax.transAxes, fontsize=9,
                 verticalalignment='top', horizontalalignment='right',
                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
@@ -277,11 +343,11 @@ def save_all_results(all_pressure_arrays, all_velocity_arrays, distances_arrays,
             
             f.write(f"Коэффициент АЦП: {COEFFICIENT} отсчет/Паскаль\n")
             f.write(f"Плотность воздуха: {RHO} кг/м³\n")
-            f.write(f"Формула скорости: V = √(2P/ρ)\n\n")
+            f.write(f"Формула скорости: V = √(2(P-P0)/ρ)\n")
             
             # Для каждого файла
             for file_idx, filename in enumerate(file_names):
-                short_name = filename.split('/')[-1]
+                short_name = filename.split('\\')[-1]  # Изменено с '/' на '\\' для Windows путей
                 f.write(f"\n{'='*60}\n")
                 f.write(f"ФАЙЛ {file_idx+1}: {short_name}\n")
                 f.write(f"{'='*60}\n\n")
@@ -292,12 +358,17 @@ def save_all_results(all_pressure_arrays, all_velocity_arrays, distances_arrays,
                 
                 f.write(f"Количество измерений: {len(pressure_array)}\n")
                 
+                # Вычисляем площади
+                pressure_area = calculate_area_under_curve(distances, pressure_array)
+                velocity_area = calculate_area_under_curve(distances, velocity_array)
+                
                 # Статистика давления
                 f.write(f"\nДавление:\n")
                 f.write(f"  Минимум: {min(pressure_array):.2f} Па\n")
                 f.write(f"  Максимум: {max(pressure_array):.2f} Па\n")
                 f.write(f"  Среднее: {np.mean(pressure_array):.2f} Па\n")
                 f.write(f"  Медиана: {np.median(pressure_array):.2f} Па\n")
+                f.write(f"  Площадь под кривой: {pressure_area:.2f} Па·ед.\n")
                 
                 # Статистика скорости
                 f.write(f"\nСкорость:\n")
@@ -305,6 +376,7 @@ def save_all_results(all_pressure_arrays, all_velocity_arrays, distances_arrays,
                 f.write(f"  Максимум: {max(velocity_array):.2f} м/с\n")
                 f.write(f"  Среднее: {np.mean(velocity_array):.2f} м/с\n")
                 f.write(f"  Медиана: {np.median(velocity_array):.2f} м/с\n")
+                f.write(f"  Площадь под кривой: {velocity_area:.2f} (м/с)·ед.\n")
                 
                 # Первые 10 значений
                 f.write(f"\nПервые 10 значений:\n")
@@ -367,11 +439,11 @@ def main():
     
     # 5.1 Все измерения на одном графике (давление)
     print("\n1. Все измерения давления на одном графике:")
-    plot_all_pressure(all_pressure_arrays, distances_arrays, valid_files)
+    _, _, pressure_areas = plot_all_pressure(all_pressure_arrays, distances_arrays, valid_files)
     
     # 5.2 Все измерения на одном графике (скорость)
     print("\n2. Все измерения скорости на одном графике:")
-    plot_all_velocity(all_velocity_arrays, distances_arrays, valid_files)
+    _, _, velocity_areas = plot_all_velocity(all_velocity_arrays, distances_arrays, valid_files)
     
     # 5.3 Отдельные графики для каждого файла (давление)
     print("\n3. Отдельные графики давления для каждого файла:")
@@ -392,11 +464,17 @@ def main():
     for i in range(len(all_pressure_arrays)):
         pressure = all_pressure_arrays[i]
         velocity = all_velocity_arrays[i]
-        short_name = valid_files[i].split('/')[-1]
+        short_name = valid_files[i].split('\\')[-1]  # Изменено с '/' на '\\' для Windows путей
+        
+        # Вычисляем площади
+        pressure_area = calculate_area_under_curve(distances_arrays[i], pressure)
+        velocity_area = calculate_area_under_curve(distances_arrays[i], velocity)
         
         print(f"\nФайл {i+1} ({short_name}):")
         print(f"  Давление: {min(pressure):.1f} ... {max(pressure):.1f} Па (ср: {np.mean(pressure):.1f} Па)")
+        print(f"  Площадь под кривой давления: {pressure_area:.2f} Па·ед.")
         print(f"  Скорость: {min(velocity):.1f} ... {max(velocity):.1f} м/с (ср: {np.mean(velocity):.1f} м/с)")
+        print(f"  Площадь под кривой скорости: {velocity_area:.2f} (м/с)·ед.")
 
 if __name__ == "__main__":
     main()

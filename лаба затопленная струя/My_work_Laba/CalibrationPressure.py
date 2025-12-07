@@ -8,7 +8,7 @@ ADC_atm = 212386.86
 ADC_max = 215276.47826086957
 
 #расчет коэффициента
-KOEFFICIENT = round((P_max - P_atm) / (ADC_max - ADC_atm), 3)
+KOEFFICIENT = 0.50012
 print(f"Коэффициент K = {KOEFFICIENT:.6f} Па/отсчёт")
 print(f"Это значит: {1/KOEFFICIENT:.4f} отсчётов на 1 Па")
 
@@ -21,9 +21,9 @@ print(f"При ADC={ADC_max:.2f} -> P={y2_correct:.2f} Па (должно быт
 
 ADC_min_plot = ADC_atm
 ADC_max_plot = ADC_max
-ADC_range = np.linspace(ADC_min_plot, ADC_max_plot, 100)
+ADC_range = [0, ADC_max - ADC_atm]
 
-P_range_correct = P_atm + KOEFFICIENT * (ADC_range - ADC_atm)
+P_range_correct = [0, KOEFFICIENT * (ADC_range[1])]
 
 # Построение графиков
 plt.figure(figsize=(12, 6))
@@ -52,7 +52,7 @@ plt.legend()
 plt.tight_layout()
 
 # Калибровочные точки
-plt.plot([ADC_atm, ADC_max], [y1_correct, y2_correct], 'bo', markersize=8, label='Калибровочные точки')
+plt.plot([ADC_atm - ADC_atm, ADC_max - ADC_atm], [y1_correct, y2_correct], 'bo', markersize=8, label='Калибровочные точки')
 
 plt.xlabel('Отсчеты АЦП', fontsize=12)
 plt.ylabel('Давление, Па', fontsize=12)
@@ -61,7 +61,7 @@ plt.grid(True, alpha=0.3)
 plt.legend()
 
 # Формулы на графике
-plt.text(0.05, 0.95, f'K = {KOEFFICIENT:.6f} Па/отсчёт', 
+plt.text(0.05, 0.95, f'K = {KOEFFICIENT:.6f} Па/Отсчет', 
          transform=plt.gca().transAxes, fontsize=11,
          bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.8))
 
