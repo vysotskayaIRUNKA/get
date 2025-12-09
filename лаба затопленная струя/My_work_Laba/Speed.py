@@ -2,21 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-# Коэффициент преобразования (отсчеты АЦП в паскали)
-COEFFICIENT = 0.50012  # отсчет/Паскаль
-# Плотность воздуха (кг/м^3)
+COEFFICIENT = 0.50012 
 RHO = 1.3
 ADC_atm = 212386.86
-# Список файлов с измерениями
-# ФАЙЛ 1: mm0.txt - базовая настройка
-# ФАЙЛ 2: mm1.txt - первое измерение
-# ФАЙЛ 3: mm2.txt - второе измерение
-# ФАЙЛ 4: mm3.txt - третье измерение
-# ФАЙЛ 5: mm4.txt - четвертое измерение
-# ФАЙЛ 6: mm5.txt - пятое измерение
-# ФАЙЛ 7: mm6.txt - шестое измерение
-# ФАЙЛ 8: mm7.txt - седьмое измерение
-# ФАЙЛ 9: mm8.txt - восьмое измерение
 
 FILE_NAMES = [
     "d:\Filiki\My_work_Laba\mm0.txt",  # Файл 1
@@ -30,7 +18,6 @@ FILE_NAMES = [
     "d:\Filiki\My_work_Laba\mm80.txt",  # Файл 9
 ]
 
-# Цвета для разных файлов
 COLORS = ['blue', 'red', 'green', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive']
 
 def read_adc_measurements(filename):
@@ -47,7 +34,7 @@ def read_adc_measurements(filename):
                         adc_value = float(line)
                         measurements.append(adc_value)
                     except ValueError:
-                        continue  # просто пропускаем нечисла
+                        continue
             
             if not measurements:
                 print(f"Файл '{filename}' пуст")
@@ -105,7 +92,6 @@ def convert_to_velocity(pressure_measurements):
     velocity_measurements = []
     
     for P in pressure_measurements:
-        # Вычисляем разность давления и проверяем, чтобы подкоренное выражение было неотрицательным
         pressure_diff = P - 117
         
         if pressure_diff > 0:
@@ -464,7 +450,7 @@ def main():
     for i in range(len(all_pressure_arrays)):
         pressure = all_pressure_arrays[i]
         velocity = all_velocity_arrays[i]
-        short_name = valid_files[i].split('\\')[-1]  # Изменено с '/' на '\\' для Windows путей
+        short_name = valid_files[i].split('\\')[-1]
         
         # Вычисляем площади
         pressure_area = calculate_area_under_curve(distances_arrays[i], pressure)
